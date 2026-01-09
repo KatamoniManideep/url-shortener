@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, models, Document } from "mongoose";
+import mongoose, { Schema, Model,model, models, Document } from "mongoose";
 
 interface UrlDocument extends Document {
   shortId: string;
@@ -15,7 +15,7 @@ const urlSchema = new Schema<UrlDocument>(
   { timestamps: true }
 );
 
-export const Url = models.Url || model<UrlDocument>("Url", urlSchema);
+export const Url: Model<UrlDocument> = models.Url || model<UrlDocument>("Url", urlSchema);
 
 export async function connectDB() {
   if (mongoose.connection.readyState === 1) return;
