@@ -1,19 +1,26 @@
-import { NextResponse } from 'next/server';
-import { connectDB, Url } from '@/lib/db';
 
-export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ shortId: string }> }
-) {
-  await connectDB();
+import { NextResponse } from 'next/server';
+import { Redis } from "@upstash/redis";
+import { connectDB, Url } from '@/lib/db';
+import { incrementClicks } from '@/lib/redis';
+
+const redis=Redis.fromEnv()
+
+export const dynamic = 'force-dynamic'; 
+
+export async function GET(req: Request, { params }: { params: Promise<{ shortId: string }> }) {
   const { shortId } = await params;
   
-  const url = await Url.findOne({ shortId });
   
+  await connectDB();
+  const url = await Url.findOne({ shortId });
+  const cached = await redis.exists(`url:${shortId}`);
+ 
+
   return NextResponse.json({
     shortId,
     totalClicks: url?.clicks || 0,
-    originalUrl: url?.originalUrl,
-    createdAt: url?.createdAt
+    inRedisCache: cached === 1,
+    originalUrl: url?.originalUrl || ''
   });
 }
